@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DailyLife Toolkit</title>
+  <style>
+    :root {
+      --bg: #0f172a; /* slate-900 */
+      --card: #111827; /* gray-900 */
+      --muted: #94a3b8; /* slate-400 */
+      --text: #e5e7eb; /* gray-200 */
+      --accent: #22c55e; /* green-500 */
+      --accent-2: #3b82f6; /* blue-500 */
+      --warn: #f59e0b; /* amber-500 */
+      --danger: #ef4444; /* red-500 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 80% -10%, #1f2937 0%, var(--bg) 60%);
+      color: var(--text);
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px clamp(16px, 4vw, 40px);
+    }
+    .brand { font-weight: 800; letter-spacing: .5px; font-size: clamp(18px, 2.4vw, 24px); }
+    .pill { padding: 6px 10px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); border-radius: 999px; font-size: 12px; color: var(--muted); }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px) 40px; }
+
+    .hero {
+      display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: center; padding: 16px 0 24px;
+    }
+    @media (max-width: 880px){ .hero { grid-template-columns: 1fr; } }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card h2 { margin: 0 0 12px; font-size: 20px; }
+
+    .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .tab-btn { cursor: pointer; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); color: var(--text); font-weight: 600; }
+    .tab-btn.active { outline: 2px solid rgba(59,130,246,.5); background: rgba(59,130,246,.08); }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 980px){ .grid { grid-template-columns: 1fr; } }
+
+    .section { padding: 18px; }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row.wrap { flex-wrap: wrap; }
+    input, select, button, textarea {
+      background: #0b1220; border: 1px solid rgba(255,255,255,.1); color: var(--text); padding: 10px 12px; border-radius: 12px; outline: none; font: inherit;
+    }
+    input:focus, select:focus, textarea:focus { border-color: rgba(59,130,246,.6); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    button.primary { background: var(--accent-2); border: none; font-weight: 700; cursor: pointer; }
+    button.ghost { background: transparent; border: 1px dashed rgba(255,255,255,.2); cursor: pointer; }
+    button.danger { background: var(--danger); border: none; cursor: pointer; }
+    small.muted { color: var(--muted); }
+    ul.clean { list-style: none; padding: 0; margin: 8px 0 0; }
+    .item { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; margin-top: 8px; }
+    .tag { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); color: var(--muted);
+      background: rgba(255,255,255,.05);
+    }
+
+    footer { text-align: center; color: var(--muted); padding: 20px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">DailyLife Toolkit</div>
+    <div class="pill">100% Offline • Saves to your device</div>
+  </header>
+  <div class="container">
+    <section class="hero">
+      <div class="card section">
+        <h2>All‑in‑One Daily Helper</h2>
+        <p class="desc">A simple website that people can use every day: manage tasks, track expenses, and convert units. Everything is saved in <b>LocalStorage</b> so it works without login.</p>
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="todo">To‑Do</button>
+          <button class="tab-btn" data-tab="expense">Expenses</button>
+          <button class="tab-btn" data-tab="convert">Unit Converter</button>
+        </div>
+      </div>
+      <div class="card section">
+        <h2>Quick Tips</h2>
+        <ul>
+          <li>Click a task to mark it done.</li>
+          <li>Use categories for expenses (Food, Travel, etc.).</li>
+          <li>Converter supports length, weight, temperature, currency (manual rate).</li>
+        </ul>
+        <div style="margin-top:12px" class="row wrap">
+          <button class="ghost" id="exportJson">Export Data</button>
+          <input type="file" id="importJson" accept="application/json" />
+          <button class="danger" id="resetAll">Reset All</button>
+        </div>
+        <small class="muted">Export creates a JSON backup you can import later.</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <!-- To-Do -->
+      <div class="card section" id="panel-todo">
+        <h2>To‑Do</h2>
+        <div class="row wrap">
+          <input id="todoText" placeholder="Add a task…" />
+          <input id="todoDue" type="date" />
+          <button class="primary" id="addTodo">Add</button>
+        </div>
+        <ul class="clean" id="todoList"></ul>
+      </div>
+
+      <!-- Expenses -->
+      <div class="card section" id="panel-expense" style="display:none">
+        <h2>Expenses</h2>
+        <div class="row wrap">
+          <input id="exName" placeholder="Item / Note" />
+          <input id="exAmt" type="number" step="0.01" placeholder="Amount" />
+          <select id="exCat">
+            <option>Food</option><option>Travel</option><option>Bills</option><option>Shopping</option><option>Other</option>
+          </select>
+          <button class="primary" id="addEx">Add</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <span class="tag">Month Total: <b id="exTotal">0</b></span>
+          <span class="tag">Items: <b id="exCount">0</b></span>
+          <select id="exFilter"><option value="all">All</option><option>Food</option><option>Travel</option><option>Bills</option><option>Shopping</option><option>Other</option></select>
+        </div>
+        <ul class="clean" id="exList"></ul>
+      </div>
+
+      <!-- Converter -->
+      <div class="card section" id="panel-convert" style="display:none">
+        <h2>Unit Converter</h2>
+        <div class="row wrap" style="margin-bottom:8px">
+          <select id="convType">
+            <option value="length">Length</option>
+            <option value="weight">Weight</option>
+            <option value="temp">Temperature</option>
+            <option value="currency">Currency (manual rate)</option>
+          </select>
+          <input id="convInput" type="number" placeholder="Value" />
+          <input id="convRate" type="number" placeholder="Rate (for currency)" />
+          <button class="primary" id="doConv">Convert</button>
+        </div>
+        <div id="convOut" class="card section" style="padding:12px"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    Built with ♥ — Publish on GitHub Pages/Netlify and monetize with AdSense or affiliate links in Tips panel.
+  </footer>
+
+  <script>
+    // ---------- Utilities & Storage ----------
+    const store = {
+      get(k, fallback){ try{ return JSON.parse(localStorage.getItem(k)) ?? fallback }catch{ return fallback } },
+      set(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+    };
+
+    // Tabs
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = {
+      todo: document.getElementById('panel-todo'),
+      expense: document.getElementById('panel-expense'),
+      convert: document.getElementById('panel-convert')
+    };
+    tabs.forEach(btn=>btn.addEventListener('click',()=>{
+      tabs.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.dataset.tab;
+      Object.entries(panels).forEach(([key,el])=> el.style.display = key===t? 'block':'none');
+    }));
+
+    // ---------- To‑Do ----------
+    const todoListEl = document.getElementById('todoList');
+    const todoData = store.get('todos', []);
+
+    function renderTodos(){
+      todoListEl.innerHTML = '';
+      todoData.forEach((t, idx)=>{
+        const li = document.createElement('li');
+        li.className = 'item';
+        const left = document.createElement('div');
+        left.innerHTML = `<div style="display:flex; gap:8px; align-items:center">
+          <input type="checkbox" ${t.done? 'checked':''} data-idx="${idx}" class="todo-check">
+          <span style="${t.done? 'text-decoration:line-through; color:var(--muted)':''}">${escapeHtml(t.text)}</span>
+          ${t.due? `<span class='tag' title='Due date'>📅 ${t.due}</span>`: ''}
+        </div>`;
+        const right = document.createElement('div');
+        right.innerHTML = `<button class='ghost' data-act='edit' data-idx='${idx}'>Edit</button>
+                           <button class='danger' data-act='del' data-idx='${idx}'>Delete</button>`;
+        li.append(left, right);
+        todoListEl.appendChild(li);
+      });
+      store.set('todos', todoData);
+    }
+
+    function escapeHtml(s){ return s.replace(/[&<>"]+/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+
+    document.getElementById('addTodo').onclick = ()=>{
+      const text = document.getElementById('todoText').value.trim();
+      const due = document.getElementById('todoDue').value || '';
+      if(!text) return;
+      todoData.push({ text, due, done:false, id:crypto.randomUUID() });
+      document.getElementById('todoText').value = '';
+      document.getElementById('todoDue').value = '';
+      renderTodos();
+    };
+
+    todoListEl.addEventListener('change', e=>{
+      if(e.target.classList.contains('todo-check')){
+        const i = +e.target.dataset.idx; todoData[i].done = e.target.checked; renderTodos();
+      }
+    });
+    todoListEl.addEventListener('click', e=>{
+      const act = e.target.dataset.act; if(!act) return;
+      const i = +e.target.dataset.idx;
+      if(act==='del'){ todoData.splice(i,1); renderTodos(); }
+      if(act==='edit'){
+        const t = prompt('Edit task', todoData[i].text);
+        if(t!==null){ todoData[i].text = t.trim(); renderTodos(); }
+      }
+    });
+
+    renderTodos();
+
+    // ---------- Expenses ----------
+    const exListEl = document.getElementById('exList');
+    const exTotalEl = document.getElementById('exTotal');
+    const exCountEl = document.getElementById('exCount');
+    const exFilter = document.getElementById('exFilter');
+    const exData = store.get('expenses', []);
+
+    function renderExpenses(){
+      const filter = exFilter.value;
+      exListEl.innerHTML = '';
+      const month = new Date().toISOString().slice(0,7);
+      let total = 0, count = 0;
+      exData.forEach((ex, idx)=>{
+        const inMonth = ex.date.startsWith(month);
+        const catMatch = filter==='all' || filter===ex.cat;
+        if(catMatch){
+          const li = document.createElement('li');
+          li.className = 'item';
+          li.innerHTML = `
+            <div>
+              <div style="font-weight:700">₹ ${Number(ex.amt).toFixed(2)} <span class='tag'>${escapeHtml(ex.cat)}</span></div>
+              <small class='muted'>${escapeHtml(ex.name || 'Note')}</small>
+            </div>
+            <div>
+              <small class='muted'>${ex.date}</small>
+              <div class='row' style='margin-top:6px; justify-content:flex-end; gap:6px'>
+                <button class='ghost' data-ex='edit' data-idx='${idx}'>Edit</button>
+                <button class='danger' data-ex='del' data-idx='${idx}'>Delete</button>
+              </div>
+            </div>`;
+          exListEl.appendChild(li);
+        }
+        if(inMonth){ total += Number(ex.amt)||0; count++; }
+      });
+      exTotalEl.textContent = total.toFixed(2);
+      exCountEl.textContent = count;
+      store.set('expenses', exData);
+    }
+
+    document.getElementById('addEx').onclick = ()=>{
+      const name = document.getElementById('exName').value.trim();
+      const amt = parseFloat(document.getElementById('exAmt').value);
+      const cat = document.getElementById('exCat').value;
+      if(!amt || amt<=0) return;
+      exData.unshift({ name, amt, cat, date: new Date().toISOString().slice(0,10), id: crypto.randomUUID() });
+      document.getElementById('exName').value = '';
+      document.getElementById('exAmt').value = '';
+      renderExpenses();
+    };
+
+    exListEl.addEventListener('click', e=>{
+      const act = e.target.dataset.ex; if(!act) return;
+      const i = +e.target.dataset.idx;
+      if(act==='del'){ exData.splice(i,1); renderExpenses(); }
+      if(act==='edit'){
+        const ex = exData[i];
+        const name = prompt('Name', ex.name);
+        if(name===null) return;
+        const amt = prompt('Amount', ex.amt);
+        if(amt===null) return;
+        const cat = prompt('Category (Food/Travel/Bills/Shopping/Other)', ex.cat) || ex.cat;
+        exData[i] = { ...ex, name: name.trim(), amt: parseFloat(amt)||ex.amt, cat };
+        renderExpenses();
+      }
+    });
+
+    exFilter.addEventListener('change', renderExpenses);
+    renderExpenses();
+
+    // ---------- Converter ----------
+    const convType = document.getElementById('convType');
+    const convInput = document.getElementById('convInput');
+    const convRate = document.getElementById('convRate');
+    const convOut = document.getElementById('convOut');
+    document.getElementById('doConv').onclick = ()=>{
+      const type = convType.value; const v = parseFloat(convInput.value);
+      if(isNaN(v)) { convOut.textContent = 'Enter a value'; return; }
+      let html = '';
+      if(type==='length'){
+        const m = v; const km = v/1000; const ft = v*3.28084; const inx = v*39.3701;
+        html = `<b>${v}</b> meters = ${km.toFixed(4)} km • ${ft.toFixed(2)} ft • ${inx.toFixed(2)} in`;
+      }
+      if(type==='weight'){
+        const kg = v; const g = v*1000; const lb = v*2.20462; const oz = v*35.274;
+        html = `<b>${v}</b> kg = ${g.toFixed(0)} g • ${lb.toFixed(2)} lb • ${oz.toFixed(2)} oz`;
+      }
+      if(type==='temp'){
+        const c = v; const f = c*9/5+32; const k = c+273.15;
+        html = `<b>${v}</b> °C = ${f.toFixed(2)} °F • ${k.toFixed(2)} K`;
+      }
+      if(type==='currency'){
+        const rate = parseFloat(convRate.value);
+        if(!rate){ convOut.textContent = 'Enter a manual rate (e.g., 83 for USD→INR)'; return; }
+        const out = v*rate;
+        html = `${v} × rate ${rate} = <b>${out.toFixed(2)}</b>`;
+      }
+      convOut.innerHTML = html;
+    };
+
+    // ---------- Backup / Restore / Reset ----------
+    document.getElementById('exportJson').onclick = ()=>{
+      const data = { todos: store.get('todos', []), expenses: store.get('expenses', []) };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'dailylife-backup.json'; a.click(); URL.revokeObjectURL(url);
+    };
+    document.getElementById('importJson').addEventListener('change', async e=>{
+      const file = e.target.files?.[0]; if(!file) return;
+      const text = await file.text();
+      try{
+        const data = JSON.parse(text);
+        if(data.todos) store.set('todos', data.todos);
+        if(data.expenses) store.set('expenses', data.expenses);
+        location.reload();
+      }catch(err){ alert('Invalid JSON'); }
+    });
+
+    document.getElementById('resetAll').onclick = ()=>{
+      if(confirm('This will erase all data saved in your browser for this app. Continue?')){
+        localStorage.removeItem('todos');
+        localStorage.removeItem('expenses');
+        location.reload();
+      }
+    };
+  </script>
+</body>
+</html>
